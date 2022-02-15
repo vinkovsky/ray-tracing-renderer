@@ -2,13 +2,33 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
   typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.RayTracingRenderer = {}, global.THREE));
-}(this, (function (exports, THREE$1) { 'use strict';
+})(this, (function (exports, THREE$1) { 'use strict';
+
+  function _interopNamespace(e) {
+    if (e && e.__esModule) return e;
+    var n = Object.create(null);
+    if (e) {
+      Object.keys(e).forEach(function (k) {
+        if (k !== 'default') {
+          var d = Object.getOwnPropertyDescriptor(e, k);
+          Object.defineProperty(n, k, d.get ? d : {
+            enumerable: true,
+            get: function () { return e[k]; }
+          });
+        }
+      });
+    }
+    n["default"] = e;
+    return Object.freeze(n);
+  }
+
+  var THREE__namespace = /*#__PURE__*/_interopNamespace(THREE$1);
 
   const ThinMaterial = 1;
   const ThickMaterial = 2;
   const ShadowCatcherMaterial = 3;
 
-  var constants = /*#__PURE__*/Object.freeze({
+  var constants$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     ThinMaterial: ThinMaterial,
     ThickMaterial: ThickMaterial,
@@ -190,7 +210,7 @@
   function isHDRTexture(texture) {
     return texture.map
       && texture.map.image
-      && (texture.map.encoding === THREE$1.RGBEEncoding || texture.map.encoding === THREE$1.LinearEncoding);
+      && (texture.map.encoding === THREE__namespace.RGBEEncoding || texture.map.encoding === THREE__namespace.LinearEncoding);
   }
 
   function makeFramebuffer(gl, { color, depth }) {
@@ -240,7 +260,7 @@
     };
   }
 
-  var vertex = {
+  var vertex$1 = {
   source: `
   layout(location = 0) in vec2 a_position;
 
@@ -360,20 +380,19 @@
   }
 
   function makeRenderPass(gl, params) {
-    const {
-      fragment,
-      vertex,
-    } = params;
+    const { fragment, vertex } = params;
 
-    const vertexCompiled = vertex instanceof WebGLShader ? vertex : makeVertexShader(gl, params);
+    const vertexCompiled =
+      vertex instanceof WebGLShader ? vertex : makeVertexShader(gl, params);
 
-    const fragmentCompiled = fragment instanceof WebGLShader ? fragment : makeFragmentShader(gl, params);
+    const fragmentCompiled =
+      fragment instanceof WebGLShader ? fragment : makeFragmentShader(gl, params);
 
     const program = createProgram(gl, vertexCompiled, fragmentCompiled);
 
     return {
       ...makeRenderPassFromProgram(gl, program),
-      outputLocs: fragment.outputs ? getOutputLocations(fragment.outputs) : {}
+      outputLocs: fragment.outputs ? getOutputLocations(fragment.outputs) : {},
     };
   }
 
@@ -386,7 +405,6 @@
   }
 
   function makeRenderPassFromProgram(gl, program) {
-
     const uniformSetter = makeUniformSetter(gl, program);
 
     const textures = {};
@@ -405,7 +423,7 @@
 
         textures[name] = {
           unit,
-          tex: texture
+          tex: texture,
         };
       } else {
         textures[name].tex = texture;
@@ -440,7 +458,8 @@
   }
 
   function makeShaderStage(gl, type, shader, defines) {
-    let str = '#version 300 es\nprecision mediump float;\nprecision mediump int;\n';
+    let str =
+      "#version 300 es\nprecision mediump float;\nprecision mediump int;\nprecision lowp isampler2D;\n";
 
     if (defines) {
       str += addDefines(defines);
@@ -454,7 +473,7 @@
       str += addIncludes(shader.includes, defines);
     }
 
-    if (typeof shader.source === 'function') {
+    if (typeof shader.source === "function") {
       str += shader.source(defines);
     } else {
       str += shader.source;
@@ -464,7 +483,7 @@
   }
 
   function addDefines(defines) {
-    let str = '';
+    let str = "";
 
     for (const name in defines) {
       const value = defines[name];
@@ -480,7 +499,7 @@
   }
 
   function addOutputs(outputs) {
-    let str = '';
+    let str = "";
 
     const locations = getOutputLocations(outputs);
 
@@ -493,10 +512,10 @@
   }
 
   function addIncludes(includes, defines) {
-    let str = '';
+    let str = "";
 
     for (let include of includes) {
-      if (typeof include === 'function') {
+      if (typeof include === "function") {
         str += include(defines);
       } else {
         str += include;
@@ -532,7 +551,7 @@
 
     gl.bindVertexArray(null);
 
-    const vertexShader = makeVertexShader(gl, { vertex });
+    const vertexShader = makeVertexShader(gl, { vertex: vertex$1 });
 
     function draw() {
       gl.bindVertexArray(vao);
@@ -545,7 +564,7 @@
     };
   }
 
-  var vertex$1 = {
+  var vertex = {
 
   source: `
   in vec3 aPosition;
@@ -570,7 +589,7 @@
 `
   };
 
-  var constants$1 = `
+  var constants = `
   #define PI 3.14159265359
   #define TWOPI 6.28318530718
   #define INVPI 0.31830988618
@@ -682,11 +701,11 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
 #endif
 `;
 
-  var fragment = {
+  var fragment$3 = {
 
   outputs: ['position', 'normal', 'faceNormal', 'color', 'matProps'],
   includes: [
-    constants$1,
+    constants,
     materialBuffer,
   ],
   source: `
@@ -740,8 +759,8 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
   function makeGBufferPass(gl, { materialBuffer, mergedMesh }) {
     const renderPass = makeRenderPass(gl, {
       defines: materialBuffer.defines,
-      vertex: vertex$1,
-      fragment
+      vertex,
+      fragment: fragment$3
     });
 
     renderPass.setTexture('diffuseMap', materialBuffer.textures.diffuseMap);
@@ -1207,21 +1226,21 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
     });
 
     if (maps.map.textures.length > 0) {
-      const { relativeSizes, texture } = makeTextureArray(gl, maps.map.textures, true);
+      const { relativeSizes, texture } = makeTextureArray$1(gl, maps.map.textures, true);
       textures.diffuseMap = texture;
       bufferData.diffuseMapSize = relativeSizes;
       bufferData.diffuseMapIndex = maps.map.indices;
     }
 
     if (maps.normalMap.textures.length > 0) {
-      const { relativeSizes, texture } = makeTextureArray(gl, maps.normalMap.textures, false);
+      const { relativeSizes, texture } = makeTextureArray$1(gl, maps.normalMap.textures, false);
       textures.normalMap = texture;
       bufferData.normalMapSize = relativeSizes;
       bufferData.normalMapIndex = maps.normalMap.indices;
     }
 
     if (pbrMap.textures.length > 0) {
-      const { relativeSizes, texture } = makeTextureArray(gl, pbrMap.textures, false);
+      const { relativeSizes, texture } = makeTextureArray$1(gl, pbrMap.textures, false);
       textures.pbrMap = texture;
       bufferData.pbrMapSize = relativeSizes;
       bufferData.roughnessMapIndex = pbrMap.indices.roughnessMap;
@@ -1254,7 +1273,7 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
     return { defines, textures };
   }
 
-  function makeTextureArray(gl, textures, gammaCorrection = false) {
+  function makeTextureArray$1(gl, textures, gammaCorrection = false) {
     const images = textures.map(t => t.image);
     const flipY = textures.map(t => t.flipY);
     const { maxSize, relativeSizes } = maxImageSize(images);
@@ -1842,21 +1861,29 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
 
     if (background.isColor) {
       backgroundImage = generateSolidMap(1, 1, background);
-    } else if (background.encoding === THREE$1.RGBEEncoding) {
-        backgroundImage = {
-          width: background.image.width,
-          height: background.image.height,
-          data: background.image.data,
-        };
-        backgroundImage.data = rgbeToFloat(backgroundImage.data);
+    } else if (background.encoding === THREE__namespace.RGBEEncoding) {
+      backgroundImage = {
+        width: background.image.width,
+        height: background.image.height,
+        data: background.image.data,
+      };
+      backgroundImage.data = rgbeToFloat(backgroundImage.data);
     }
     return backgroundImage;
   }
 
-  function generateEnvMapFromSceneComponents(directionalLights, ambientLights, environmentLights) {
+  function generateEnvMapFromSceneComponents(
+    directionalLights,
+    ambientLights,
+    environmentLights
+  ) {
     let envImage = initializeEnvMap(environmentLights);
-    ambientLights.forEach( light => { addAmbientLightToEnvMap(light, envImage); });
-    directionalLights.forEach( light => { envImage.data = addDirectionalLightToEnvMap(light, envImage); });
+    ambientLights.forEach((light) => {
+      addAmbientLightToEnvMap(light, envImage);
+    });
+    directionalLights.forEach((light) => {
+      envImage.data = addDirectionalLightToEnvMap(light, envImage);
+    });
 
     return envImage;
   }
@@ -1876,7 +1903,10 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
       envImage.data = rgbeToFloat(envImage.data, environmentLight.intensity);
     } else {
       // initialize blank map
-      envImage = generateSolidMap(DEFAULT_MAP_RESOLUTION.width, DEFAULT_MAP_RESOLUTION.height);
+      envImage = generateSolidMap(
+        DEFAULT_MAP_RESOLUTION.width,
+        DEFAULT_MAP_RESOLUTION.height
+      );
     }
 
     return envImage;
@@ -1896,15 +1926,13 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
   }
 
   function setBufferToColor(buffer, color, intensity = 1) {
-    buffer.forEach(function(part, index) {
+    buffer.forEach(function (part, index) {
       const component = index % 3;
       if (component === 0) {
         buffer[index] = color.r * intensity;
-      }
-      else if (component === 1) {
+      } else if (component === 1) {
         buffer[index] = color.g * intensity;
-      }
-      else if (component === 2) {
+      } else if (component === 2) {
         buffer[index] = color.b * intensity;
       }
     });
@@ -1913,26 +1941,24 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
 
   function addAmbientLightToEnvMap(light, image) {
     const color = light.color;
-    image.data.forEach(function(part, index) {
+    image.data.forEach(function (part, index) {
       const component = index % 3;
       if (component === 0) {
         image.data[index] += color.r * light.intensity;
-      }
-      else if (component === 1) {
+      } else if (component === 1) {
         image.data[index] += color.g * light.intensity;
-      }
-      else if (component === 2) {
+      } else if (component === 2) {
         image.data[index] += color.b * light.intensity;
       }
     });
   }
 
   function addDirectionalLightToEnvMap(light, image) {
-    const sphericalCoords = new THREE$1.Spherical();
+    const sphericalCoords = new THREE__namespace.Spherical();
     const lightDirection = light.position.clone().sub(light.target.position);
 
     sphericalCoords.setFromVector3(lightDirection);
-    sphericalCoords.theta = (Math.PI * 3 / 2) - sphericalCoords.theta;
+    sphericalCoords.theta = (Math.PI * 3) / 2 - sphericalCoords.theta;
     sphericalCoords.makeSafe();
 
     return addLightAtCoordinates(light, image, sphericalCoords);
@@ -1956,23 +1982,35 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
     const useThreshold = threshold < Math.PI / 5;
 
     // functional trick to keep the conditional check out of the main loop
-    const intensityFromAngleFunction = useThreshold ? getIntensityFromAngleDifferentialThresholded : getIntensityFromAngleDifferential;
+    const intensityFromAngleFunction = useThreshold
+      ? getIntensityFromAngleDifferentialThresholded
+      : getIntensityFromAngleDifferential;
 
     let begunAddingContributions = false;
-    let currentCoords = new THREE$1.Spherical();
+    let currentCoords = new THREE__namespace.Spherical();
 
     // Iterates over each row from top to bottom
     for (let i = 0; i < xTexels; i++) {
-
       let encounteredInThisRow = false;
 
       // Iterates over each texel in row
       for (let j = 0; j < yTexels; j++) {
         const bufferIndex = j * width + i;
-        currentCoords = equirectangularToSpherical(i, j, width, height, currentCoords);
-        const falloff = intensityFromAngleFunction(originCoords, currentCoords, softness, threshold);
+        currentCoords = equirectangularToSpherical(
+          i,
+          j,
+          width,
+          height,
+          currentCoords
+        );
+        const falloff = intensityFromAngleFunction(
+          originCoords,
+          currentCoords,
+          softness,
+          threshold
+        );
 
-        if(falloff > 0) {
+        if (falloff > 0) {
           encounteredInThisRow = true;
           begunAddingContributions = true;
         }
@@ -1986,7 +2024,7 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
 
       // First row to not add a contribution since adding began
       // This means the entire light has been added and we can exit early
-      if(!encounteredInThisRow && begunAddingContributions) {
+      if (!encounteredInThisRow && begunAddingContributions) {
         return floatBuffer;
       }
     }
@@ -2007,11 +2045,16 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
     }
   }
 
-  function getIntensityFromAngleDifferentialThresholded(originCoords, currentCoords, softness, threshold) {
+  function getIntensityFromAngleDifferentialThresholded(
+    originCoords,
+    currentCoords,
+    softness,
+    threshold
+  ) {
     const deltaPhi = getAngleDelta(originCoords.phi, currentCoords.phi);
-    const deltaTheta =  getAngleDelta(originCoords.theta, currentCoords.theta);
+    const deltaTheta = getAngleDelta(originCoords.theta, currentCoords.theta);
 
-    if(deltaTheta > threshold && deltaPhi > threshold) {
+    if (deltaTheta > threshold && deltaPhi > threshold) {
       return 0;
     }
 
@@ -2019,38 +2062,47 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
     return getFalloffAtAngle(angle, softness);
   }
 
-  function getIntensityFromAngleDifferential(originCoords, currentCoords, softness) {
+  function getIntensityFromAngleDifferential(
+    originCoords,
+    currentCoords,
+    softness
+  ) {
     const angle = angleBetweenSphericals(originCoords, currentCoords);
     return getFalloffAtAngle(angle, softness);
   }
 
   function getAngleDelta(angleA, angleB) {
     const diff = Math.abs(angleA - angleB) % (2 * Math.PI);
-    return diff > Math.PI ? (2 * Math.PI - diff) : diff;
+    return diff > Math.PI ? 2 * Math.PI - diff : diff;
   }
 
-  const angleBetweenSphericals = function() {
-    const originVector = new THREE$1.Vector3();
-    const currentVector = new THREE$1.Vector3();
+  const angleBetweenSphericals = (function () {
+    const originVector = new THREE__namespace.Vector3();
+    const currentVector = new THREE__namespace.Vector3();
 
     return (originCoords, currentCoords) => {
       originVector.setFromSpherical(originCoords);
       currentVector.setFromSpherical(currentCoords);
       return originVector.angleTo(currentVector);
     };
-  }();
+  })();
 
-    // TODO: possibly clean this up and optimize it
-    //
-    // This function was arrived at through experimentation, it provides good
-    // looking results with percieved softness that scale relatively linearly with
-    //  the softness value in the 0 - 1 range
-    //
-    // For now it doesn't incur too much of a performance penalty because for most of our use cases (lights without too much softness)
-    // the threshold cutoff in getIntensityFromAngleDifferential stops us from running it too many times
+  // TODO: possibly clean this up and optimize it
+  //
+  // This function was arrived at through experimentation, it provides good
+  // looking results with percieved softness that scale relatively linearly with
+  //  the softness value in the 0 - 1 range
+  //
+  // For now it doesn't incur too much of a performance penalty because for most of our use cases (lights without too much softness)
+  // the threshold cutoff in getIntensityFromAngleDifferential stops us from running it too many times
   function getFalloffAtAngle(angle, softness) {
-    const softnessCoefficient = Math.pow(2, 14.5 * Math.max(0.001, 1.0 - clamp(softness, 0.0, 1.0)));
-    const falloff = Math.pow(softnessCoefficient, 1.1) * Math.pow(8, -softnessCoefficient * Math.pow(angle, 1.8));
+    const softnessCoefficient = Math.pow(
+      2,
+      14.5 * Math.max(0.001, 1.0 - clamp(softness, 0.0, 1.0))
+    );
+    const falloff =
+      Math.pow(softnessCoefficient, 1.1) *
+      Math.pow(8, -softnessCoefficient * Math.pow(angle, 1.8));
     return falloff;
   }
 
@@ -2071,7 +2123,7 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
       height: image.height + 1
     };
 
-    const cdf = makeTextureArray$1(cdfImage.width, cdfImage.height, 2);
+    const cdf = makeTextureArray(cdfImage.width, cdfImage.height, 2);
 
     for (let y = 0; y < image.height; y++) {
       const sinTheta = Math.sin(Math.PI * (y + 0.5) / image.height);
@@ -2109,7 +2161,7 @@ vec3 getMatNormal(int materialIndex, vec2 uv, vec3 normal, vec3 dp1, vec3 dp2, v
   }
 
 
-  function makeTextureArray$1(width, height, channels) {
+  function makeTextureArray(width, height, channels) {
     const array = new Float32Array(channels * width * height);
 
     return {
@@ -3124,9 +3176,9 @@ void sampleGlassSpecular(SurfaceInteraction si, int bounce, inout Path path) {
 
 `;
 
-  var fragment$1 = {
+  var fragment$2 = {
   includes: [
-    constants$1,
+    constants,
     rayTraceCore,
     textureLinear,
     materialBuffer,
@@ -3511,7 +3563,7 @@ void sampleGlassSpecular(SurfaceInteraction si, int bounce, inout Path path) {
         SAMPLING_DIMENSIONS: samplingDimensions.reduce((a, b) => a + b),
         ...materialBuffer.defines
       },
-      fragment: fragment$1,
+      fragment: fragment$2,
       vertex: fullscreenQuad.vertexShader
     });
 
@@ -3661,7 +3713,7 @@ void sampleGlassSpecular(SurfaceInteraction si, int bounce, inout Path path) {
     }
   }
 
-  var fragment$2 = {
+  var fragment$1 = {
   outputs: ['light'],
   includes: [textureLinear],
   source: `
@@ -3784,10 +3836,10 @@ void sampleGlassSpecular(SurfaceInteraction si, int bounce, inout Path path) {
           MAX_SAMPLES: maxReprojectedSamples.toFixed(1)
         },
         vertex: fullscreenQuad.vertexShader,
-        fragment: fragment$2
+        fragment: fragment$1
       });
 
-    const historyCamera = new THREE$1.Matrix4();
+    const historyCamera = new THREE__namespace.Matrix4();
 
     function setPreviousCamera(camera) {
       historyCamera.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
@@ -3830,7 +3882,7 @@ void sampleGlassSpecular(SurfaceInteraction si, int bounce, inout Path path) {
     };
   }
 
-  var fragment$3 = {
+  var fragment = {
   includes: [textureLinear],
   outputs: ['color'],
   source: `
@@ -3942,11 +3994,11 @@ void sampleGlassSpecular(SurfaceInteraction si, int bounce, inout Path path) {
   };
 
   const toneMapFunctions = {
-    [THREE$1.LinearToneMapping]: 'linear',
-    [THREE$1.ReinhardToneMapping]: 'reinhard',
-    [THREE$1.Uncharted2ToneMapping]: 'uncharted2',
-    [THREE$1.CineonToneMapping]: 'cineon',
-    [THREE$1.ACESFilmicToneMapping]: 'acesFilmic'
+    [THREE__namespace.LinearToneMapping]: 'linear',
+    [THREE__namespace.ReinhardToneMapping]: 'reinhard',
+    [THREE__namespace.Uncharted2ToneMapping]: 'uncharted2',
+    [THREE__namespace.CineonToneMapping]: 'cineon',
+    [THREE__namespace.ACESFilmicToneMapping]: 'acesFilmic'
   };
 
   function makeToneMapPass(gl, params) {
@@ -3963,7 +4015,7 @@ void sampleGlassSpecular(SurfaceInteraction si, int bounce, inout Path path) {
         EXPOSURE: toneMappingParams.exposure.toExponential()
       },
       vertex: fullscreenQuad.vertexShader,
-      fragment: fragment$3,
+      fragment,
     };
 
     renderPassConfig.defines.EDGE_PRESERVING_UPSCALE = true;
@@ -4561,7 +4613,7 @@ void sampleGlassSpecular(SurfaceInteraction si, int bounce, inout Path path) {
     const optionalExtensions = loadExtensions(gl, glOptionalExtensions);
 
     let pipeline = null;
-    const size = new THREE$1.Vector2();
+    const size = new THREE__namespace.Vector2();
     let pixelRatio = 1;
 
     const module = {
@@ -4571,7 +4623,7 @@ void sampleGlassSpecular(SurfaceInteraction si, int bounce, inout Path path) {
       needsUpdate: true,
       onSampleRendered: null,
       renderWhenOffFocus: true,
-      toneMapping: THREE$1.LinearToneMapping,
+      toneMapping: THREE__namespace.LinearToneMapping,
       toneMappingExposure: 1,
       toneMappingWhitePoint: 1,
     };
@@ -4616,7 +4668,7 @@ void sampleGlassSpecular(SurfaceInteraction si, int bounce, inout Path path) {
 
     module.getSize = (target) => {
       if (!target) {
-        target = new THREE$1.Vector2();
+        target = new THREE__namespace.Vector2();
       }
 
       return target.copy(size);
@@ -4745,8 +4797,8 @@ void sampleGlassSpecular(SurfaceInteraction si, int bounce, inout Path path) {
   exports.RayTracingMaterial = RayTracingMaterial;
   exports.RayTracingRenderer = RayTracingRenderer;
   exports.SoftDirectionalLight = SoftDirectionalLight;
-  exports.constants = constants;
+  exports.constants = constants$1;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-})));
+}));
